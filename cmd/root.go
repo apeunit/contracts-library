@@ -16,10 +16,9 @@ package cmd
 
 import (
 	"fmt"
-	lb "github.com/aeternity/tool-nodelb/nodelb"
-	"github.com/aeternity/tool-nodelb/utils"
 	"os"
-	"path/filepath"
+
+	lb "github.com/aeternity/aepp-contracts-library/aecl"
 
 	"github.com/shibukawa/configdir"
 	"github.com/spf13/cobra"
@@ -62,7 +61,7 @@ func init() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	// retrieve the directory (os dependent) where the config file exists
-	configDirs := configdir.New("aeternity", "aecli")
+	configDirs := configdir.New("aeternity", "contracts-library")
 	globalCfg := configDirs.QueryFolders(configdir.Global)[0]
 	// set configuration paramteres
 	viper.SetConfigName(lb.ConfigFilename) // name of config file (without extension)
@@ -72,25 +71,28 @@ func initConfig() {
 	if len(cfgFile) > 0 { // enable ability to specify config file via flag
 		viper.SetConfigFile(cfgFile)
 	}
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		viper.Unmarshal(&lb.Config)
-		lb.Config.Defaults()
-		lb.Config.Validate()
-		lb.Config.ConfigPath = viper.ConfigFileUsed()
-	} else {
-		switch err.(type) {
-		case viper.ConfigFileNotFoundError:
-			if do := utils.AskYes("A configuration file was not found, would you like to generate one?", true); do {
-				configFilePath := filepath.Join(globalCfg.Path, lb.ConfigFilename+".yml")
-				lb.GenerateDefaultConfig(configFilePath, RootCmd.Version)
-				lb.Config.Save()
-			} else {
-				fmt.Println("Configuration file not found!!")
-				os.Exit(1)
-			}
-		}
 
-	}
+	lb.Config.Defaults()
+	lb.Config.Validate()
 
+	// // If a config file is found, read it in.
+	// if err := viper.ReadInConfig(); err == nil {
+	// 	viper.Unmarshal(&lb.Config)
+	// 	lb.Config.Defaults()
+	// 	lb.Config.Validate()
+	// 	lb.Config.ConfigPath = viper.ConfigFileUsed()
+	// } else {
+	// 	switch err.(type) {
+	// 	case viper.ConfigFileNotFoundError:
+	// 		if do := utils.AskYes("A configuration file was not found, would you like to generate one?", true); do {
+	// 			configFilePath := filepath.Join(globalCfg.Path, lb.ConfigFilename+".yml")
+	// 			lb.GenerateDefaultConfig(configFilePath, RootCmd.Version)
+	// 			//lb.Config.Save()
+	// 		} else {
+	// 			fmt.Println("Configuration file not found!!")
+	// 			os.Exit(1)
+	// 		}
+	// 	}
+
+	// }
 }

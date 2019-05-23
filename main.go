@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/aeternity/tool-nodelb/cmd"
+	"github.com/aeternity/aepp-contracts-library/cmd"
 )
 
 // Version hold the version of the program

@@ -1,31 +1,32 @@
 version: '3'
 services:
-  sdk:
-    build:
-      context: .
-      dockerfile: Dockerfile.ci
-    depends_on: [node]
-    entrypoint: docker/wait-for-it.sh node:3013 --
-    env_file: [./build/docker/sdk.env]
+  # aecl:
+  #   build: 
+  #     context: .
+  #   hostname: node
+  #   expose: [1905]
+  #   environment:
+  #     COMPILER_URL: https://compiler.aepps.com
+  #     DATABASE_URL: postgres://aecl:aecl@database/contracts_library?sslmode=disable
+  
+  database:
+    image: postgres
+    restart: unless-stopped
+    ports: 
+    - 5432:5432
     environment:
-      - WALLET_PRIV=${WALLET_PRIV}
-      - WALLET_PUB=${WALLET_PUB}
-    volumes:
-      - .:/go/src/app
+      POSTGRES_PASSWORD: aecl
+      POSTGRES_USER: aecl
+      POSTGRES_DB: contracts_library
+    volumes: 
+    - aecl_data:/var/lib/postgresql/data
+  
+  compiler:
+    image: aeternity/aesophia_http:v2.1.0
+    hostname: compiler
+    ports: 
+    - 3080:3080
 
-  node:
-    image: aeternity/epoch:${TAG}
-    hostname: node
-    expose: [3013, 3113]
-    environment:
-      EPOCH_CONFIG: /home/epoch/epoch.yaml
-    command: -aecore expected_mine_rate ${EPOCH_MINE_RATE:-15000}
-    volumes:
-      - ${PWD}/build/docker/epoch_node_mean16.yaml:/home/epoch/epoch.yaml
-      - ${PWD}/build/docker/keys/node:/home/epoch/node/keys
-      - node_db:/home/epoch/node/data/mnesia
-      - node_keys:/home/epoch/node/keys
 
 volumes:
-  node_db:
-  node_keys:
+  aecl_data:

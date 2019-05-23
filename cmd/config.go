@@ -16,7 +16,8 @@ package cmd
 
 import (
 	"fmt"
-	lb "github.com/aeternity/tool-nodelb/nodelb"
+
+	lb "github.com/aeternity/aepp-contracts-library/aecl"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
 )
