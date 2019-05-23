@@ -146,3 +146,13 @@ func GetEnv(key, fallback string) string {
 	}
 	return fallback
 }
+
+// GetEnvInt64 get a env var as a int64 number
+func GetEnvInt64(key string, fallback int64) int64 {
+	v := GetEnv(key, "")
+	if len(v) == 0 {
+		return fallback
+	}
+	iv, _ := strconv.ParseInt(v, 10, 64)
+	return iv
+}

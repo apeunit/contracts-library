@@ -43,6 +43,16 @@ The database must be a PostgreSQL database.
 
 The address the application listens to, default `0.0.0.0:1905`
 
+#### `MAX_BODY_SIZE`
+
+The maximum size of the body for the request and the response in bytes, default `2e6` (2mb)
+
+## Building
+
+to 
+
 ## Kubernetes 
 
 The following is a sample kubernetes configuration
+
+

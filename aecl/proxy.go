@@ -102,7 +102,7 @@ func (t *LoggingTransport) RoundTrip(request *http.Request) (response *http.Resp
 		return
 	}
 	// consume the request body buffer
-	requestBody, err := ioutil.ReadAll(io.LimitReader(request.Body, 1024))
+	requestBody, err := ioutil.ReadAll(io.LimitReader(request.Body, Config.Tuning.MaxBodySize))
 	if err != nil {
 		log.Println("Error reading request body:", err)
 		return
@@ -130,7 +130,7 @@ func (t *LoggingTransport) RoundTrip(request *http.Request) (response *http.Resp
 	contract.ResponseCode = response.StatusCode
 	// get response message
 	if response.ContentLength > 0 {
-		responseBody, _ := ioutil.ReadAll(io.LimitReader(response.Body, 1024))
+		responseBody, _ := ioutil.ReadAll(io.LimitReader(response.Body, Config.Tuning.MaxBodySize))
 		contract.ResponseMsg = string(responseBody)
 		// reset the buffer for the request
 		response.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
