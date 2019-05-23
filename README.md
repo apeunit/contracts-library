@@ -1,20 +1,48 @@
-# aepp-sdk-go
+# aepp-contracts-library
 
-golang sdk for aeternity blockchain
-[![Go Report Card](https://goreportcard.com/badge/github.com/aeternity/aepp-sdk-go)](https://goreportcard.com/report/github.com/aeternity/aepp-sdk-go) [![GoDoc](https://godoc.org/github.com/aeternity/aepp-sdk-go?status.svg)](https://godoc.org/github.com/aeternity/aepp-sdk-go)
+Reverse proxy for a public facing sophia compiler that stores the source code of the contracts beein compiled
 
+## Schema
 
-## Development
-
-download the latest openapi spcecifications
+The following is the database schema:
 
 ```
-curl  https://sdk-edgenet.aepps.com/api -o api/swagger.json    
+DROP TABLE IF EXISTS "public"."contracts";
+-- This script only contains the table creation statements and does not fully represent the table in the database. It's still missing: indices, triggers. Do not use it as a backup.
+
+-- Table Definition
+CREATE TABLE "public"."contracts" (
+    "id" varchar(200) NOT NULL, -- blacke2b hash of the contract source code
+    "source" text NOT NULL, -- the source code of the contract
+    "compilations" int4 NOT NULL DEFAULT 1, -- number of compilations
+    "created_at" timestamp NOT NULL DEFAULT now(), -- first compilation date
+    "updated_at" timestamp NOT NULL DEFAULT now(), -- the last time the contract was compiled
+    "response_code" int4, -- the response code for the compilation (for the first call)
+    "response_msg" text,  -- the response message for the compilation (for the first call)
+    PRIMARY KEY ("id")
+);
 ```
 
-generate the client (using [go-swagger](https://github.com/go-swagger/go-swagger))
+## Configuration
 
-```
-rm -rf generated/*
-swagger generate client -f api/swagger.json -A epoch  --with-flatten=minimal --target generated  --tags=external --api-package=operations --client-package=client
-```
+The contracts library can be configured using environment variables:
+
+#### `COMPILER_URL`
+
+The url of the compiler, for example: `http://compiler.aepps.com`.
+
+Note that the compiler must be available via http (not https)
+
+#### `DATABASE_URL`
+
+The connection string for the database, for example: `postgres://aecl:aecl@localhost/contracts_library?sslmode=disable`.
+
+The database must be a PostgreSQL database.
+
+#### `LISTEN_ADDRES`
+
+The address the application listens to, default `0.0.0.0:1905`
+
+## Kubernetes 
+
+The following is a sample kubernetes configuration
