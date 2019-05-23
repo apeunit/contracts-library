@@ -5,8 +5,9 @@ APP=aecli
 # build output folder
 OUTPUTFOLDER = dist
 # docker image
-DOCKER_IMAGE = aeternity/aepps-sdk-go
-DOCKER_TAG = $(shell git describe --tags --always)
+DOCKER_REGISTRY = 166568770115.dkr.ecr.eu-central-1.amazonaws.com/aeternity
+DOCKER_IMAGE = aepp-contracts-library
+DOCKER_TAG = $(shell git describe --always --tags)
 # build paramters
 OS = linux
 ARCH = amd64
@@ -56,10 +57,6 @@ lint: lint-all
 lint-all:
 	@golint -set_exit_status $(GOPACKAGES)
 
-install: build-dist
-	@cp dist/aecli $(GOPATH)/bin
-	@echo copied to GOPATH/bin
-
 clean:
 	@echo remove $(OUTPUTFOLDER) folder
 	@rm -rf dist
@@ -67,21 +64,20 @@ clean:
 
 docker: docker-build
 
-docker-build: build-dist
+docker-build:
 	@echo copy resources
-	@cp config/settings.docker.yaml $(OUTPUTFOLDER)/settings.yaml
-	@echo build image
-	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) -f ./build/docker/Dockerfile .
+	docker build -t $(DOCKER_IMAGE):latest  .
 	@echo done
 
 docker-push: docker-build
 	@echo push image
-	docker tag $(DOCKER_IMAGE):$(DOCKER_TAG) $(DOCKER_IMAGE):latest
-	docker push $(DOCKER_IMAGE)
+	docker tag $(DOCKER_IMAGE) $(DOCKER_REGISTRY)/$(DOCKER_IMAGE):$(DOCKER_TAG)
+	aws ecr get-login --no-include-email --region eu-central-1 --profile aeternity-sdk | sh
+	docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE):$(DOCKER_TAG)
 	@echo done
 
 docker-run: 
-	@docker run -p 1804:1804 $(DOCKER_IMAGE) 
+	docker run -p 1905:1905 $(DOCKER_IMAGE):latest
 
 debug-start:
-	@go run main.go -c config/settings.sample.yaml --debug start
+	@go run main.go start
