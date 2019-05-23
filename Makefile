@@ -11,6 +11,9 @@ DOCKER_TAG = $(shell git describe --always --tags)
 # build paramters
 OS = linux
 ARCH = amd64
+# K8S
+K8S_NAMESPACE = default
+K8S_DEPLOYMENT = aepp-contracts-library
 
 .PHONY: list
 list:
@@ -66,12 +69,12 @@ docker: docker-build
 
 docker-build:
 	@echo copy resources
-	docker build -t $(DOCKER_IMAGE):latest  .
+	docker build -t $(DOCKER_IMAGE)  .
 	@echo done
 
-docker-push: docker-build
+docker-push:
 	@echo push image
-	docker tag $(DOCKER_IMAGE) $(DOCKER_REGISTRY)/$(DOCKER_IMAGE):$(DOCKER_TAG)
+	docker tag $(DOCKER_IMAGE):latest $(DOCKER_REGISTRY)/$(DOCKER_IMAGE):$(DOCKER_TAG)
 	aws ecr get-login --no-include-email --region eu-central-1 --profile aeternity-sdk | sh
 	docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE):$(DOCKER_TAG)
 	@echo done
@@ -81,3 +84,9 @@ docker-run:
 
 debug-start:
 	@go run main.go start
+
+deploy-k8s:
+	@echo deploy k8s
+	kubectl -n $(K8S_NAMESPACE) patch deployment $(K8S_DEPLOYMENT) --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/image", "value":"$(DOCKER_REGISTRY)/$(DOCKER_IMAGE):$(DOCKER_TAG)"}]'
+	@echo deploy k8s done
+
