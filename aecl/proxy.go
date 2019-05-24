@@ -64,7 +64,8 @@ type Contract struct {
 
 func storeContract(contract *Contract) (err error) {
 	//
-	_, err = db.Query(` INSERT INTO 
+	// log.Printf("%#v", db.Stats())
+	_, err = db.Exec(` INSERT INTO 
 	contracts (id, source, response_code, response_msg) VALUES ( $1, $2, $3, $4) 
 	ON CONFLICT (id) DO UPDATE SET 
 	compilations = contracts.compilations + 1,
@@ -140,7 +141,7 @@ func (t *LoggingTransport) RoundTrip(request *http.Request) (response *http.Resp
 		response.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
 	}
 	// store the contract
-	storeContract(contract)
+	go storeContract(contract)
 	// print the reply
 	log.Println("Response [", contract.ResponseCode, "] took ", time.Since(start))
 	return
