@@ -12,8 +12,11 @@ const (
 	ConfigFilename = "config"
 )
 
+//TuningSchema define fine tuning options schema
 type TuningSchema struct {
-	MaxBodySize int64 `json:"max_body_size" yaml:"max_body_size" mapstructure:"max_body_size"`
+	RequestMaxBodySize int64 `json:"max_body_size" yaml:"max_body_size" mapstructure:"max_body_size"`
+	DbMaxOpenConns     int   `json:"max_open_connections" yaml:"max_open_connections" mapstructure:"max_open_connections"`
+	DbMaxIdleConns     int   `json:"max_idle_connections" yaml:"max_idle_connections" mapstructure:"max_idle_connections"`
 }
 
 // ConfigSchema define the configuration object
@@ -28,11 +31,13 @@ type ConfigSchema struct {
 //Defaults generate configuration defaults
 func (c *ConfigSchema) Defaults() *ConfigSchema {
 	// for server
-	c.CompilerURL = utils.GetEnv("COMPILER_URL", "https://compiler.aepps.com")
+	c.CompilerURL = utils.GetEnv("COMPILER_URL", "http://compiler.aepps.com")
 	c.DatabaseURL = utils.GetEnv("DATABASE_URL", "postgres://middleware:middleware@35.228.174.89:5432/contracts_library?sslmode=disable")
 	c.ListenAddress = utils.GetEnv("AECL_ADDRESS", ":1905")
 	c.Tuning = TuningSchema{
-		MaxBodySize: utils.GetEnvInt64("MAX_BODY_SIZE", 2000000),
+		RequestMaxBodySize: utils.GetEnvInt64("MAX_BODY_SIZE", 2000000),
+		DbMaxOpenConns:     utils.GetEnvInt("DATABASE_MAX_OPEN_CONNECTIONS", 5),
+		DbMaxIdleConns:     utils.GetEnvInt("DATABASE_MAX_IDLE_CONNECTIONS", 1),
 	}
 	return c
 }

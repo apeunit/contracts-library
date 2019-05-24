@@ -39,17 +39,24 @@ The connection string for the database, for example: `postgres://aecl:aecl@local
 
 The database must be a PostgreSQL database.
 
-#### `LISTEN_ADDRES`
+#### `LISTEN_ADDRES` (OPTIONAL)
 
 The address the application listens to, default `0.0.0.0:1905`
 
-#### `MAX_BODY_SIZE`
+#### `MAX_BODY_SIZE` (OPTIONAL)
 
 The maximum size of the body for the request and the response in bytes, default `2e6` (2mb)
 
-## Building
+#### `DATABASE_MAX_OPEN_CONNECTIONS`  (OPTIONAL)
 
-to 
+The maximum number of open connections to the database, default `5`
+
+#### `DATABASE_MAX_IDLE_CONNECTIONS` (OPTIONAL)
+
+The maximum number of idle connections to the database, default `1`
+
+*WARN*: the total connection to the database opened will be `DATABASE_MAX_IDLE_CONNECTIONS` + `DATABASE_MAX_OPEN_CONNECTIONS`
+
 
 ## Kubernetes 
 

@@ -13,8 +13,10 @@ import (
 	"net/url"
 	"time"
 
-	_ "github.com/lib/pq"
 	"golang.org/x/crypto/blake2b"
+
+	// load postgresql driver
+	_ "github.com/lib/pq"
 )
 
 // channels
@@ -36,6 +38,8 @@ func StartProxy() (err error) {
 
 	// Open the db connection
 	db, err = sql.Open("postgres", Config.DatabaseURL)
+	db.SetMaxOpenConns(Config.Tuning.DbMaxOpenConns)
+	db.SetMaxIdleConns(Config.Tuning.DbMaxIdleConns)
 	if err != nil {
 		log.Println("Error establishing connection to the database", err)
 		return
@@ -102,7 +106,7 @@ func (t *LoggingTransport) RoundTrip(request *http.Request) (response *http.Resp
 		return
 	}
 	// consume the request body buffer
-	requestBody, err := ioutil.ReadAll(io.LimitReader(request.Body, Config.Tuning.MaxBodySize))
+	requestBody, err := ioutil.ReadAll(io.LimitReader(request.Body, Config.Tuning.RequestMaxBodySize))
 	if err != nil {
 		log.Println("Error reading request body:", err)
 		return
@@ -130,7 +134,7 @@ func (t *LoggingTransport) RoundTrip(request *http.Request) (response *http.Resp
 	contract.ResponseCode = response.StatusCode
 	// get response message
 	if response.ContentLength > 0 {
-		responseBody, _ := ioutil.ReadAll(io.LimitReader(response.Body, Config.Tuning.MaxBodySize))
+		responseBody, _ := ioutil.ReadAll(io.LimitReader(response.Body, Config.Tuning.RequestMaxBodySize))
 		contract.ResponseMsg = string(responseBody)
 		// reset the buffer for the request
 		response.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
