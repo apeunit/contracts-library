@@ -53,7 +53,7 @@ var Home string = `
 
 				<ul>
 					{{range .Compilers}}
-					<li><a href="https://github.com/aeternity/aesophia/releases/tag/{{ .Version }}"><code>{{ .Version }}</code></a>{{if .IsDefault}}(default){{end}}</li>
+					<li><a href="https://github.com/aeternity/aesophia/releases/tag/v{{ .Version }}"><code>{{ .Version }}</code></a>{{if .IsDefault}}(default){{end}}</li>
 					{{else}}<p>no compilers avaliable</p>
 					{{end}}
         </ul>
@@ -63,10 +63,10 @@ var Home string = `
           if no header is present the default compiler will be used.
         </p>
         <p>
-          Here is the curl example to select the compiler version <code>v3.1.0</code>:
+          Here is the curl example to select the compiler version <code>3.1.0</code>:
         </p>
         <pre>curl -i \
--H "{{.Header}}: v3.1.0" \
+-H "{{.Header}}: 3.1.0" \
 -H "Content-Type: application/json" \
 https://compiler.aepps.com/version
 
@@ -92,9 +92,11 @@ Server: Cowboy
     
     
   </div>
-  <footer class="sticky">
+	<!--
+	<footer class="sticky">
     <p>v{{.Version}}</p>
-  </footer>
+	</footer>
+	-->
 </body> 
 
 </html>
