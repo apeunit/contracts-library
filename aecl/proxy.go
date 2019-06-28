@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io"
 	"io/ioutil"
 	"log"
@@ -17,6 +18,7 @@ import (
 
 	// load postgresql driver
 
+	"github.com/aeternity/aepp-contracts-library/templates"
 	utils "github.com/aeternity/aepp-contracts-library/utils"
 	_ "github.com/lib/pq"
 )
@@ -25,6 +27,7 @@ import (
 var (
 	db      *sql.DB
 	proxies map[string]*httputil.ReverseProxy
+	home    bytes.Buffer
 )
 
 // StartProxy starts the reverse proxy
@@ -65,6 +68,28 @@ func StartProxy() (err error) {
 		return
 	}
 
+	// Build the homepage
+	t, err := template.New("home").Parse(templates.Home)
+	if err != nil {
+		log.Println("Template build for home failed", err)
+		return
+	}
+	data := struct {
+		Version   string
+		Compilers []CompilerSchema
+		Header    string
+	}{
+		Version:   "1.0.0",
+		Compilers: Config.Compilers,
+		Header:    Config.Tuning.VersionHeaderName,
+	}
+	// generate the page once and for all since we do
+	// not support hot reloading of the configuration
+	if err = t.Execute(&home, data); err != nil {
+		log.Println("Template build for home failed", err)
+		return
+	}
+
 	return
 }
 
@@ -97,6 +122,15 @@ func storeContract(contract *Contract) (err error) {
 func HandleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {
 	rip := req.RemoteAddr
 	path := req.URL.Path
+	// if the url is the root then render the home
+	if path == "/" {
+		res.Write(home.Bytes())
+		return
+	}
+	if path == "/favicon.ico" {
+		return
+	}
+
 	// get header request
 	compilerVersion := req.Header.Get(Config.Tuning.VersionHeaderName)
 	// resolve the request
