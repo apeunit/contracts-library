@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	lb "github.com/aeternity/aepp-contracts-library/aecl"
@@ -59,6 +60,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	lb.Defaults()
 	// retrieve the directory (os dependent) where the config file exists
 	// set configuration paramteres
 	viper.SetConfigName(lb.ConfigFilename) // name of config file (without extension)
@@ -68,16 +70,16 @@ func initConfig() {
 	if len(cfgFile) > 0 { // enable ability to specify config file via flag
 		viper.SetConfigFile(cfgFile)
 	}
-	lb.Defaults()
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		viper.Unmarshal(&lb.Config)
 		lb.Config.Validate()
 		lb.Config.ConfigPath = viper.ConfigFileUsed()
+		log.Println("Using config file at ", lb.Config.ConfigPath)
 	} else {
 		switch err.(type) {
 		case viper.ConfigFileNotFoundError:
-			lb.Defaults()
+			viper.Unmarshal(&lb.Config)
 		}
 	}
 }

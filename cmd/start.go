@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/aeternity/aepp-contracts-library/aecl"
@@ -42,9 +43,16 @@ var startCmd = &cobra.Command{
 	Short: "Contract library builder",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Contract library starting")
-		fmt.Println("Listening on address", aecl.Config.ListenAddress)
-		fmt.Println("Available compilers: ", len(aecl.Config.Compilers))
+		fmt.Println("     ______    ___      _____      _   ")
+		fmt.Println("   .' ___  | .'   `.   |_   _|    (_)  ")
+		fmt.Println("  / .'   \\_|/  .-.  \\    | |      __   ")
+		fmt.Println("  | |       | |   | |    | |   _ [  |  ")
+		fmt.Println("  \\ `.___.'\\   `-'  /_  _| |__/ | | |  ")
+		fmt.Println("   `.____ .' `.___.'(_)|________|[___] v", RootCmd.Version)
+		fmt.Println()
+		log.Println("Contract library for aeternity started", aecl.Config.ListenAddress)
+		log.Println("Listening on address", aecl.Config.ListenAddress)
+		log.Println("Available compilers: ", len(aecl.Config.Compilers))
 		aecl.StartProxy()
 		// start server
 		http.HandleFunc("/", aecl.HandleRequestAndRedirect)

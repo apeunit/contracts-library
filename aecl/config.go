@@ -39,19 +39,19 @@ type CompilerSchema struct {
 //Defaults generate configuration defaults
 func Defaults() {
 
-	viper.SetDefault("DatabaseURL", "postgres://aecl:aecl@localhost/contracts_library?sslmode=disable")
-	viper.SetDefault("ListenAddress", ":1905")
-	viper.SetDefault("Tuning", map[string]string{
-		"RequestMaxBodySize": "2000000",
-		"DbMaxOpenConns":     "5",
-		"DbMaxIdleConns":     "1",
-		"VersionHeaderName":  "Sophia-Compiler-Version",
+	viper.SetDefault("db_url", "postgres://aecl:aecl@localhost/contracts_library?sslmode=disable")
+	viper.SetDefault("aecl_address", ":1905")
+	viper.SetDefault("tuning", map[string]interface{}{
+		"max_body_size":        2000000,
+		"max_open_connections": 5,
+		"max_idle_connections": 1,
+		"version_header_name":  "Sophia-Compiler-Version",
 	})
-	viper.SetDefault("Compilers", []map[string]string{
-		map[string]string{
-			"URL":       "http://localhost:3080",
-			"Version":   "*",
-			"IsDefault": "true",
+	viper.SetDefault("compilers", []map[string]interface{}{
+		map[string]interface{}{
+			"url":        "http://localhost:3080",
+			"version":    "*",
+			"is_default": true,
 		},
 	})
 }
