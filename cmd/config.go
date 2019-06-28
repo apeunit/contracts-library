@@ -20,6 +20,7 @@ import (
 	lb "github.com/aeternity/aepp-contracts-library/aecl"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // configCmd represents the config command
@@ -29,6 +30,9 @@ var configCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Sprintf("%#v", lb.Config)
+		viper.SetConfigType("yaml")
+		err := viper.WriteConfigAs("examples/contracts_library.yaml")
+		fmt.Println(err)
 		// aeternity.Pp(
 		// 	"Epoch URL", aeternity.Config.P.Epoch.URL,
 		// 	"Epoch Internal URL", aeternity.Config.P.Epoch.InternalURL,

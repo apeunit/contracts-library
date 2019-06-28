@@ -44,7 +44,7 @@ var startCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Contract library starting")
 		fmt.Println("Listening on address", aecl.Config.ListenAddress)
-		fmt.Println("Proxy requests to ", aecl.Config.CompilerURL)
+		fmt.Println("Available compilers: ", len(aecl.Config.Compilers))
 		aecl.StartProxy()
 		// start server
 		http.HandleFunc("/", aecl.HandleRequestAndRedirect)

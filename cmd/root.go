@@ -20,7 +20,6 @@ import (
 
 	lb "github.com/aeternity/aepp-contracts-library/aecl"
 
-	"github.com/shibukawa/configdir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -61,38 +60,24 @@ func init() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	// retrieve the directory (os dependent) where the config file exists
-	configDirs := configdir.New("aeternity", "contracts-library")
-	globalCfg := configDirs.QueryFolders(configdir.Global)[0]
 	// set configuration paramteres
 	viper.SetConfigName(lb.ConfigFilename) // name of config file (without extension)
-	viper.AddConfigPath(globalCfg.Path)    // adding home directory as first search path
+	viper.AddConfigPath("/etc/aepps")      // adding home directory as first search path
 	//viper.AutomaticEnv()                          // read in environment variables that match
 	// if there is the config file read it
 	if len(cfgFile) > 0 { // enable ability to specify config file via flag
 		viper.SetConfigFile(cfgFile)
 	}
-
-	lb.Config.Defaults()
-	lb.Config.Validate()
-
-	// // If a config file is found, read it in.
-	// if err := viper.ReadInConfig(); err == nil {
-	// 	viper.Unmarshal(&lb.Config)
-	// 	lb.Config.Defaults()
-	// 	lb.Config.Validate()
-	// 	lb.Config.ConfigPath = viper.ConfigFileUsed()
-	// } else {
-	// 	switch err.(type) {
-	// 	case viper.ConfigFileNotFoundError:
-	// 		if do := utils.AskYes("A configuration file was not found, would you like to generate one?", true); do {
-	// 			configFilePath := filepath.Join(globalCfg.Path, lb.ConfigFilename+".yml")
-	// 			lb.GenerateDefaultConfig(configFilePath, RootCmd.Version)
-	// 			//lb.Config.Save()
-	// 		} else {
-	// 			fmt.Println("Configuration file not found!!")
-	// 			os.Exit(1)
-	// 		}
-	// 	}
-
-	// }
+	lb.Defaults()
+	// If a config file is found, read it in.
+	if err := viper.ReadInConfig(); err == nil {
+		viper.Unmarshal(&lb.Config)
+		lb.Config.Validate()
+		lb.Config.ConfigPath = viper.ConfigFileUsed()
+	} else {
+		switch err.(type) {
+		case viper.ConfigFileNotFoundError:
+			lb.Defaults()
+		}
+	}
 }

@@ -4,42 +4,56 @@ import (
 	"fmt"
 	"os"
 
-	utils "github.com/aeternity/aepp-contracts-library/utils"
+	"github.com/spf13/viper"
 )
 
 const (
 	// ConfigFilename default configuration file name
-	ConfigFilename = "config"
+	ConfigFilename = "contracts_library"
 )
 
 //TuningSchema define fine tuning options schema
 type TuningSchema struct {
-	RequestMaxBodySize int64 `json:"max_body_size" yaml:"max_body_size" mapstructure:"max_body_size"`
-	DbMaxOpenConns     int   `json:"max_open_connections" yaml:"max_open_connections" mapstructure:"max_open_connections"`
-	DbMaxIdleConns     int   `json:"max_idle_connections" yaml:"max_idle_connections" mapstructure:"max_idle_connections"`
+	RequestMaxBodySize int64  `json:"max_body_size" yaml:"max_body_size" mapstructure:"max_body_size"`
+	DbMaxOpenConns     int    `json:"max_open_connections" yaml:"max_open_connections" mapstructure:"max_open_connections"`
+	DbMaxIdleConns     int    `json:"max_idle_connections" yaml:"max_idle_connections" mapstructure:"max_idle_connections"`
+	VersionHeaderName  string `json:"version_header_name" yaml:"version_header_name" mapstructure:"version_header_name"`
 }
 
 // ConfigSchema define the configuration object
 type ConfigSchema struct {
-	ConfigPath    string       `json:"-" yaml:"-" mapstructure:"-"`
-	CompilerURL   string       `json:"compiler_url" yaml:"compiler_url" mapstructure:"compiler_url"`
-	DatabaseURL   string       `json:"db_url" yaml:"db_url" mapstructure:"db_url"`
-	ListenAddress string       `json:"aecl_address" yaml:"aecl_address" mapstructure:"aecl_address"`
-	Tuning        TuningSchema `json:"tuning" yaml:"tuning" mapstructure:"tuning"`
+	ConfigPath    string           `json:"-" yaml:"-" mapstructure:"-"`
+	Compilers     []CompilerSchema `json:"compilers" yaml:"compilers" mapstructure:"compilers"`
+	DatabaseURL   string           `json:"db_url" yaml:"db_url" mapstructure:"db_url"`
+	ListenAddress string           `json:"aecl_address" yaml:"aecl_address" mapstructure:"aecl_address"`
+	Tuning        TuningSchema     `json:"tuning" yaml:"tuning" mapstructure:"tuning"`
+}
+
+// CompilerSchema is a configuration for the list of compilers
+type CompilerSchema struct {
+	URL       string `json:"url" yaml:"url" mapstructure:"url"`
+	Version   string `json:"version" yaml:"version" mapstructure:"version"`
+	IsDefault bool   `json:"is_default" yaml:"is_default" mapstructure:"is_default"`
 }
 
 //Defaults generate configuration defaults
-func (c *ConfigSchema) Defaults() *ConfigSchema {
-	// for server
-	c.CompilerURL = utils.GetEnv("COMPILER_URL", "http://compiler.aepps.com")
-	c.DatabaseURL = utils.GetEnv("DATABASE_URL", "postgres://middleware:middleware@35.228.174.89:5432/contracts_library?sslmode=disable")
-	c.ListenAddress = utils.GetEnv("AECL_ADDRESS", ":1905")
-	c.Tuning = TuningSchema{
-		RequestMaxBodySize: utils.GetEnvInt64("MAX_BODY_SIZE", 2000000),
-		DbMaxOpenConns:     utils.GetEnvInt("DATABASE_MAX_OPEN_CONNECTIONS", 5),
-		DbMaxIdleConns:     utils.GetEnvInt("DATABASE_MAX_IDLE_CONNECTIONS", 1),
-	}
-	return c
+func Defaults() {
+
+	viper.SetDefault("DatabaseURL", "postgres://aecl:aecl@localhost/contracts_library?sslmode=disable")
+	viper.SetDefault("ListenAddress", ":1905")
+	viper.SetDefault("Tuning", map[string]string{
+		"RequestMaxBodySize": "2000000",
+		"DbMaxOpenConns":     "5",
+		"DbMaxIdleConns":     "1",
+		"VersionHeaderName":  "Sophia-Compiler-Version",
+	})
+	viper.SetDefault("Compilers", []map[string]string{
+		map[string]string{
+			"URL":       "http://localhost:3080",
+			"Version":   "*",
+			"IsDefault": "true",
+		},
+	})
 }
 
 //Validate configuration
@@ -57,8 +71,7 @@ var Config ConfigSchema
 
 // GenerateDefaultConfig generate a default configuration
 func GenerateDefaultConfig(outFile, version string) {
-	Config = ConfigSchema{}
-	Config.Defaults()
+	viper.Unmarshal(&Config)
 }
 
 // // Save save the configuration to disk

@@ -16,25 +16,40 @@ import (
 	"golang.org/x/crypto/blake2b"
 
 	// load postgresql driver
+
+	utils "github.com/aeternity/aepp-contracts-library/utils"
 	_ "github.com/lib/pq"
 )
 
 // channels
 var (
-	proxy *httputil.ReverseProxy
-	db    *sql.DB
+	db      *sql.DB
+	proxies map[string]*httputil.ReverseProxy
 )
 
 // StartProxy starts the reverse proxy
 func StartProxy() (err error) {
-	compilerURL, err := url.Parse(Config.CompilerURL)
-	if err != nil {
-		log.Println("Error starting the proxy ", err)
-		return
+	proxies = make(map[string]*httputil.ReverseProxy)
+	// Prepare all the proxies
+	for _, c := range Config.Compilers {
+		compilerURL, err := url.Parse(c.URL)
+		if err != nil {
+			log.Printf("Error registerning proxy version %s at %s: %v", c.Version, c.URL, err)
+		}
+		if utils.IsEmptyStr(c.Version) {
+			log.Printf("Error registerning proxy at %s: version field cannot be empty", c.URL)
+		}
+		log.Printf("Registered compiler %s at %s (Default: %v)", c.Version, c.URL, c.IsDefault)
+		proxy := httputil.NewSingleHostReverseProxy(compilerURL)
+		proxy.Transport = &LoggingTransport{}
+		// TODO: ping the node before registering it
+		// add to the proxies list
+		proxies[c.Version] = proxy
+		// if it is the default set it with empty string
+		if c.IsDefault {
+			proxies[""] = proxy
+		}
 	}
-	log.Println("Proxy ready for ", compilerURL)
-	proxy = httputil.NewSingleHostReverseProxy(compilerURL)
-	proxy.Transport = &LoggingTransport{}
 
 	// Open the db connection
 	db, err = sql.Open("postgres", Config.DatabaseURL)
@@ -60,10 +75,10 @@ type Contract struct {
 	B2bH         string            `json:"b2bh"`
 	ResponseCode int               `json:"response_code"`
 	ResponseMsg  string            `json:"response_msg"`
+	Name         string            `json:"name"`
 }
 
 func storeContract(contract *Contract) (err error) {
-	//
 	// log.Printf("%#v", db.Stats())
 	_, err = db.Exec(` INSERT INTO 
 	contracts (id, source, response_code, response_msg) VALUES ( $1, $2, $3, $4) 
@@ -82,20 +97,32 @@ func storeContract(contract *Contract) (err error) {
 func HandleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {
 	rip := req.RemoteAddr
 	path := req.URL.Path
-	log.Println("Request from ", rip, " to ", path)
+	// get header request
+	compilerVersion := req.Header.Get(Config.Tuning.VersionHeaderName)
+	// resolve the request
+	log.Println("Request from ", rip, " to ", path, " compiler version ", compilerVersion)
+	proxy, found := proxies[compilerVersion]
+	if !found {
+		log.Println("Compiler version ", compilerVersion, " not found")
+		return
+	}
+	// resolve the request
 	proxy.ServeHTTP(res, req)
 }
 
+// LoggingTransport for roundtrips
 type LoggingTransport struct {
 	CapturedTransport http.RoundTripper
 }
 
+// RoundTrip function to save the request
 func (t *LoggingTransport) RoundTrip(request *http.Request) (response *http.Response, err error) {
 	// proxy ge requests
 	if request.Method == http.MethodGet {
 		response, err = http.DefaultTransport.RoundTrip(request)
 		return
 	}
+
 	// proxy empty body requests
 	if request.ContentLength <= 0 {
 		response, err = http.DefaultTransport.RoundTrip(request)
