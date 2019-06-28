@@ -48,7 +48,7 @@ var Home string = `
         </p>
         <p>
           The available compiler versions are listed below, to understand the difference between versions refer to 
-          the official <a href="https://github.com/aeternity/aesophia/blob/master/CHANGELOG.md#changelog">changelog</a>
+          the official <a href="https://github.com/aeternity/aesophia/blob/master/CHANGELOG.md#changelog">changelog</a>.
         </p>
 
 				<ul>
@@ -76,6 +76,15 @@ Content-Type: application/json
 Server: Cowboy
 
 {"version":"3.1.0"}</pre>
+
+				<p>
+				To explore the smart contract capabilities you can use the <a href="https://contracts.aepps.com">contract editor</a> 
+				and the middleware to track the contract transactions and events (both on <a href="https://mainnet.mdw.aepps.com/contracts">mainnet</a> and <a href="https://testnet.mdw.aepps.com/contracts">testnet</a>).
+				<p>
+				<p>
+				For additional resources and support join the <a href="https://forum.aeternity.com/">forum</a> 
+				and follow the <a href="https://twitter.com/aeternityTECH">aeternityTECH</a> twitter account.
+				</p>
 
       </div>
       
