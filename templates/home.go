@@ -68,7 +68,14 @@ var Home string = `
         <pre>curl -i \
 -H "{{.Header}}: v3.1.0" \
 -H "Content-Type: application/json" \
-https://compiler.aepps.com/api</pre>
+https://compiler.aepps.com/version
+
+HTTP/1.1 200 OK
+Content-Length: 19
+Content-Type: application/json
+Server: Cowboy
+
+{"version":"3.1.0"}</pre>
 
       </div>
       
