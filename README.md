@@ -1,14 +1,13 @@
 # aepp-contracts-library
 
-Reverse proxy for a public facing sophia compiler that stores the source code of the contracts beein compiled
+Reverse proxy for a public facing sophia compiler that stores the source code of the contracts being compiled.
 
-## Schema
+## Database
 
-The following is the database schema:
+The app requires a PostgreSQL database, the following is the database schema:
 
 ```
 DROP TABLE IF EXISTS "public"."contracts";
--- This script only contains the table creation statements and does not fully represent the table in the database. It's still missing: indices, triggers. Do not use it as a backup.
 
 -- Table Definition
 CREATE TABLE "public"."contracts" (
@@ -25,41 +24,40 @@ CREATE TABLE "public"."contracts" (
 
 ## Configuration
 
-The contracts library can be configured using environment variables:
+The contracts library can be configured using a configuration file,
+by the default the app will look into `/etc/aepps/contracts_library.yaml`.
 
-#### `COMPILER_URL`
+The following is an example of the configuration file:
 
-The url of the compiler, for example: `http://compiler.aepps.com`.
+```
+# Database connection string
+db_url: postgres://dbuser:dbpass@localhost/contracts_library?sslmode=disable
 
-Note that the compiler must be available via http (not https)
+# Listening address
+aecl_address: 0.0.0.0:1905
 
-#### `DATABASE_URL`
+# List of available compilers
+compilers:
+- url: http://aesophia-http-v320.example.com
+  version: '3.2.0'
+- url: http://aesophia-http-v310.example.com
+  version: '3.1.0'
+  is_default: "true"
+- url: http://aesophia-http-v300.example.com
+  version: '3.0.0'
+- url: http://aesophia-http-v210.example.com
+  version: '2.1.0'
 
-The connection string for the database, for example: `postgres://aecl:aecl@localhost/contracts_library?sslmode=disable`.
+# Fine tuning for the app [OPTIONAL]
+tuning:
+  max_body_size: 2000000 # size of the post message in bytes
+  max_open_connections: 5 # maximum numbers of open db connections
+  max_idle_connections: 1 # maximum numbers of idle db connections
+  version_header_name: Sophia-Compiler-Version # name of the header to use to select a compiler
+```
 
-The database must be a PostgreSQL database.
+⚠️ Note that the compilers must be available via http (not https)
 
-#### `LISTEN_ADDRES` (OPTIONAL)
-
-The address the application listens to, default `0.0.0.0:1905`
-
-#### `MAX_BODY_SIZE` (OPTIONAL)
-
-The maximum size of the body for the request and the response in bytes, default `2e6` (2mb)
-
-#### `DATABASE_MAX_OPEN_CONNECTIONS`  (OPTIONAL)
-
-The maximum number of open connections to the database, default `5`
-
-#### `DATABASE_MAX_IDLE_CONNECTIONS` (OPTIONAL)
-
-The maximum number of idle connections to the database, default `1`
-
-*WARN*: the total connection to the database opened will be `DATABASE_MAX_IDLE_CONNECTIONS` + `DATABASE_MAX_OPEN_CONNECTIONS`
-
-
-## Kubernetes 
-
-The following is a sample kubernetes configuration
+⚠️ the total connection to the database opened will be `max_open_connections` + `max_idle_connections`
 
 
