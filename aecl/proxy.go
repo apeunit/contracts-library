@@ -91,12 +91,18 @@ func StartProxy(router *chi.Mux) (err error) {
 		return
 	}
 
+	// setup the router
+	// handle the home page
+	router.Get("/", func(res http.ResponseWriter, req *http.Request) {
+		res.Write(home.Bytes())
+		return
+	})
 	// handle static files
 	log.Println("Serving assets from", Config.Web.AssetsFolderPath, "at", Config.Web.AssetsWebPath)
 	fs := http.FileServer(http.Dir(Config.Web.AssetsFolderPath))
 	router.Handle(Config.Web.AssetsWebPath, http.StripPrefix(path.Dir(Config.Web.AssetsWebPath), fs))
 	// finally register the routes in the http module
-	router.Handle("/", http.HandlerFunc(HandleRequestAndRedirect))
+	router.Handle("/*", http.HandlerFunc(HandleRequestAndRedirect))
 	// return
 	return
 }
@@ -130,15 +136,6 @@ func storeContract(contract *Contract) (err error) {
 func HandleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {
 	rip := req.RemoteAddr
 	path := req.URL.Path
-	// if the url is the root then render the home
-	switch path {
-	case "/":
-		res.Write(home.Bytes())
-		return
-	case "/favicon.ico":
-		return
-	}
-
 	// get header request
 	compilerVersion := req.Header.Get(Config.Tuning.VersionHeaderName)
 	// resolve the request
