@@ -22,11 +22,19 @@ type TuningSchema struct {
 
 // ConfigSchema define the configuration object
 type ConfigSchema struct {
-	ConfigPath    string           `json:"-" yaml:"-" mapstructure:"-"`
-	Compilers     []CompilerSchema `json:"compilers" yaml:"compilers" mapstructure:"compilers"`
-	DatabaseURL   string           `json:"db_url" yaml:"db_url" mapstructure:"db_url"`
-	ListenAddress string           `json:"aecl_address" yaml:"aecl_address" mapstructure:"aecl_address"`
-	Tuning        TuningSchema     `json:"tuning" yaml:"tuning" mapstructure:"tuning"`
+	ConfigPath    string             `json:"-" yaml:"-" mapstructure:"-"`
+	Compilers     []CompilerSchema   `json:"compilers" yaml:"compilers" mapstructure:"compilers"`
+	DatabaseURL   string             `json:"db_url" yaml:"db_url" mapstructure:"db_url"`
+	ListenAddress string             `json:"aecl_address" yaml:"aecl_address" mapstructure:"aecl_address"`
+	Tuning        TuningSchema       `json:"tuning" yaml:"tuning" mapstructure:"tuning"`
+	Web           WebResourcesSchema `json:"web" yaml:"web" mapstructure:"web"`
+}
+
+//WebResourcesSchema define the configuration for web
+type WebResourcesSchema struct {
+	HomeTemplatePath string `json:"home_template_path" yaml:"home_template_path" mapstructure:"home_template_path"`
+	AssetsFolderPath string `json:"assets_folder_path" yaml:"assets_folder_path" mapstructure:"assets_folder_path"`
+	AssetsWebPath    string `json:"assets_web_path" yaml:"assets_web_path" mapstructure:"assets_web_path"`
 }
 
 // CompilerSchema is a configuration for the list of compilers
@@ -46,6 +54,11 @@ func Defaults() {
 		"max_open_connections": 5,
 		"max_idle_connections": 1,
 		"version_header_name":  "Sophia-Compiler-Version",
+	})
+	viper.SetDefault("web", map[string]interface{}{
+		"home_template_path": "templates/home.html",
+		"assets_folder_path": "templates/assets",
+		"assets_web_path":    "/assets/*",
 	})
 	viper.SetDefault("compilers", []map[string]interface{}{
 		map[string]interface{}{

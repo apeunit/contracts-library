@@ -20,6 +20,7 @@ import (
 	"net/http"
 
 	"github.com/aeternity/aepp-contracts-library/aecl"
+	"github.com/go-chi/chi"
 	"github.com/spf13/cobra"
 )
 
@@ -53,10 +54,12 @@ var startCmd = &cobra.Command{
 		log.Println("Contract library for aeternity started", aecl.Config.ListenAddress)
 		log.Println("Listening on address", aecl.Config.ListenAddress)
 		log.Println("Available compilers: ", len(aecl.Config.Compilers))
-		aecl.StartProxy()
+
+		// start proxy
+		router := chi.NewRouter()
+		aecl.StartProxy(router)
 		// start server
-		http.HandleFunc("/", aecl.HandleRequestAndRedirect)
-		if err := http.ListenAndServe(aecl.Config.ListenAddress, nil); err != nil {
+		if err := http.ListenAndServe(aecl.Config.ListenAddress, router); err != nil {
 			panic(err)
 		}
 	},

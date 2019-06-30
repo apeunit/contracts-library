@@ -1,6 +1,7 @@
 module github.com/aeternity/aepp-contracts-library
 
 require (
+	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/lib/pq v1.1.1
 	github.com/matoous/go-nanoid v0.0.0-20180109130436-958d370425a1

@@ -12,14 +12,15 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"path"
 	"time"
 
 	"golang.org/x/crypto/blake2b"
 
 	// load postgresql driver
 
-	"github.com/aeternity/aepp-contracts-library/templates"
-	utils "github.com/aeternity/aepp-contracts-library/utils"
+	"github.com/aeternity/aepp-contracts-library/utils"
+	"github.com/go-chi/chi"
 	_ "github.com/lib/pq"
 )
 
@@ -31,7 +32,7 @@ var (
 )
 
 // StartProxy starts the reverse proxy
-func StartProxy() (err error) {
+func StartProxy(router *chi.Mux) (err error) {
 	proxies = make(map[string]*httputil.ReverseProxy)
 	// Prepare all the proxies
 	for _, c := range Config.Compilers {
@@ -69,9 +70,9 @@ func StartProxy() (err error) {
 	}
 
 	// Build the homepage
-	t, err := template.New("home").Parse(templates.Home)
+	t, err := template.New(path.Base(Config.Web.HomeTemplatePath)).ParseFiles(Config.Web.HomeTemplatePath)
 	if err != nil {
-		log.Println("Template build for home failed", err)
+		log.Println("Template build for", Config.Web.HomeTemplatePath, " failed", err)
 		return
 	}
 	data := struct {
@@ -90,6 +91,13 @@ func StartProxy() (err error) {
 		return
 	}
 
+	// handle static files
+	log.Println("Serving assets from", Config.Web.AssetsFolderPath, "at", Config.Web.AssetsWebPath)
+	fs := http.FileServer(http.Dir(Config.Web.AssetsFolderPath))
+	router.Handle(Config.Web.AssetsWebPath, http.StripPrefix(path.Dir(Config.Web.AssetsWebPath), fs))
+	// finally register the routes in the http module
+	router.Handle("/", http.HandlerFunc(HandleRequestAndRedirect))
+	// return
 	return
 }
 
@@ -123,11 +131,11 @@ func HandleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {
 	rip := req.RemoteAddr
 	path := req.URL.Path
 	// if the url is the root then render the home
-	if path == "/" {
+	switch path {
+	case "/":
 		res.Write(home.Bytes())
 		return
-	}
-	if path == "/favicon.ico" {
+	case "/favicon.ico":
 		return
 	}
 
@@ -162,6 +170,7 @@ func (t *LoggingTransport) RoundTrip(request *http.Request) (response *http.Resp
 		response, err = http.DefaultTransport.RoundTrip(request)
 		return
 	}
+
 	// proxy not compile requests
 	if request.RequestURI != "/compile" {
 		response, err = http.DefaultTransport.RoundTrip(request)
