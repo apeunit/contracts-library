@@ -60,4 +60,6 @@ tuning:
 
 ⚠️ the total connection to the database opened will be `max_open_connections` + `max_idle_connections`
 
+## Automation
 
+To retrieve the list of the available compilers in a human readable format you can use the `Accept: application/json` that will return a json reply with the list of the available compilers.

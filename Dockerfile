@@ -18,6 +18,8 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /aecl -ldflags='-s -w -ext
 FROM scratch
 # Copy our static executable.
 COPY --from=builder /aecl /
+# Copy the temlates folder
+COPY templates /
 # Run the hello binary.
 ENTRYPOINT [ "/aecl" ]
 CMD [ "start" ]
