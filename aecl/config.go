@@ -39,7 +39,7 @@ type WebResourcesSchema struct {
 
 // CompilerSchema is a configuration for the list of compilers
 type CompilerSchema struct {
-	URL       string `json:"url" yaml:"url" mapstructure:"url"`
+	URL       string `json:"-" yaml:"url" mapstructure:"url"`
 	Version   string `json:"version" yaml:"version" mapstructure:"version"`
 	IsDefault bool   `json:"is_default" yaml:"is_default" mapstructure:"is_default"`
 }

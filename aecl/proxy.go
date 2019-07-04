@@ -21,6 +21,7 @@ import (
 
 	"github.com/aeternity/aepp-contracts-library/utils"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/render"
 	_ "github.com/lib/pq"
 )
 
@@ -69,32 +70,37 @@ func StartProxy(router *chi.Mux) (err error) {
 		return
 	}
 
-	// Build the homepage
-	t, err := template.New(path.Base(Config.Web.HomeTemplatePath)).ParseFiles(Config.Web.HomeTemplatePath)
-	if err != nil {
-		log.Println("Template build for", Config.Web.HomeTemplatePath, " failed", err)
-		return
-	}
-	data := struct {
-		Version   string
-		Compilers []CompilerSchema
-		Header    string
-	}{
-		Version:   "1.0.0",
-		Compilers: Config.Compilers,
-		Header:    Config.Tuning.VersionHeaderName,
-	}
-	// generate the page once and for all since we do
-	// not support hot reloading of the configuration
-	if err = t.Execute(&home, data); err != nil {
-		log.Println("Template build for home failed", err)
-		return
-	}
-
 	// setup the router
 	// handle the home page
 	router.Get("/", func(res http.ResponseWriter, req *http.Request) {
-		res.Write(home.Bytes())
+		data := struct {
+			Version   string
+			Compilers []CompilerSchema
+			Header    string
+		}{
+			Version:   "1.0.0",
+			Compilers: Config.Compilers,
+			Header:    Config.Tuning.VersionHeaderName,
+		}
+
+		if req.Header.Get("Accept") == "application/json" {
+			render.JSON(res, req, data)
+			return
+		}
+		// Build the homepage
+		t, err := template.New(path.Base(Config.Web.HomeTemplatePath)).ParseFiles(Config.Web.HomeTemplatePath)
+		if err != nil {
+			log.Println("Template build for", Config.Web.HomeTemplatePath, " failed", err)
+			return
+		}
+
+		// generate the page once and for all since we do
+		// not support hot reloading of the configuration
+		if err = t.Execute(res, data); err != nil {
+			log.Println("Template build for home failed", err)
+			return
+		}
+		// res.Write(home.Bytes())
 		return
 	})
 	// handle static files

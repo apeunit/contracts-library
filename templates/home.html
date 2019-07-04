@@ -11,8 +11,7 @@
   <link rel="icon" type="image/png" href="/assets/img/favicon-16x16.png" sizes="16x16">
 
   <style>
-    body,
-    footer {
+    body{
       background-color: #343746;
       color: #edf3f7;
     }
@@ -35,6 +34,12 @@
     pre {
       background-color: #282a36;
       border: .0625rem solid #ddd;
+    }
+
+    .card {
+      padding: calc(1.5 * var(--universal-padding));
+      background-color: #343746;
+      color: #edf3f7;
     }
   </style>
 
@@ -97,7 +102,51 @@ Server: Cowboy
       </div>
 
     </div>
+    <div class="row">
+      <div class="col-sm-12 col-md-8 col-lg-5">
+        <p>
+          To retrieve the list of available compilers in <code>json</code> format use the <code>Accept: application/json</code> header.
+        </p>
+<pre>curl -i \
+-H "Accept: application/json" \
+https://compiler.aepps.com
 
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Content-Length: 255
+
+{
+  "Version":"1.0.0",
+  "Header":"Sophia-Compiler-Version",
+  "Compilers":
+  [
+    {
+      "version": "3.2.0",
+      "is_default": false
+    }, 
+    {
+      "version": "3.1.0",
+      "is_default": true
+    },
+    ...
+  ]
+}
+</pre>
+
+        
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12 col-md-8 col-lg-5">
+          <p class="card fluid">
+            ⚠️ The hosted compilers are provided for demo/development/testing 
+            purpose and should not be used in a production environment. Make sure 
+            to run your own compiler if necessary on production.
+          </p>
+      </div>
+    </div>
+
+    
 
   </div>
   <!--
