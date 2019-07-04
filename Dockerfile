@@ -19,7 +19,7 @@ FROM scratch
 # Copy our static executable.
 COPY --from=builder /aecl /
 # Copy the temlates folder
-COPY templates /
+COPY templates /templates
 # Run the hello binary.
 ENTRYPOINT [ "/aecl" ]
 CMD [ "start" ]
