@@ -33,6 +33,7 @@ type ConfigSchema struct {
 //WebResourcesSchema define the configuration for web
 type WebResourcesSchema struct {
 	HomeTemplatePath string `json:"home_template_path" yaml:"home_template_path" mapstructure:"home_template_path"`
+	TosTemplatePath  string `json:"tos_template_path" yaml:"tos_template_path" mapstructure:"tos_template_path"`
 	AssetsFolderPath string `json:"assets_folder_path" yaml:"assets_folder_path" mapstructure:"assets_folder_path"`
 	AssetsWebPath    string `json:"assets_web_path" yaml:"assets_web_path" mapstructure:"assets_web_path"`
 }
@@ -57,6 +58,7 @@ func Defaults() {
 	})
 	viper.SetDefault("web", map[string]interface{}{
 		"home_template_path": "templates/home.html",
+		"tos_template_path":  "templates/tos.html",
 		"assets_folder_path": "templates/assets",
 		"assets_web_path":    "/assets/*",
 	})

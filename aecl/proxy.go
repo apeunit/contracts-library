@@ -87,22 +87,14 @@ func StartProxy(router *chi.Mux) (err error) {
 			render.JSON(res, req, data)
 			return
 		}
-		// Build the homepage
-		t, err := template.New(path.Base(Config.Web.HomeTemplatePath)).ParseFiles(Config.Web.HomeTemplatePath)
-		if err != nil {
-			log.Println("Template build for", Config.Web.HomeTemplatePath, " failed", err)
-			return
-		}
-
-		// generate the page once and for all since we do
-		// not support hot reloading of the configuration
-		if err = t.Execute(res, data); err != nil {
-			log.Println("Template build for home failed", err)
-			return
-		}
-		// res.Write(home.Bytes())
+		err = renderTemplate(Config.Web.HomeTemplatePath, data, res)
 		return
 	})
+	// terms of service
+	router.Get("/tos", func(res http.ResponseWriter, req *http.Request) {
+		err = renderTemplate(Config.Web.TosTemplatePath, struct{}{}, res)
+	})
+
 	// handle static files
 	log.Println("Serving assets from", Config.Web.AssetsFolderPath, "at", Config.Web.AssetsWebPath)
 	fs := http.FileServer(http.Dir(Config.Web.AssetsFolderPath))
@@ -110,6 +102,22 @@ func StartProxy(router *chi.Mux) (err error) {
 	// finally register the routes in the http module
 	router.Handle("/*", http.HandlerFunc(HandleRequestAndRedirect))
 	// return
+	return
+}
+
+func renderTemplate(templatePath string, data interface{}, writer io.Writer) (err error) {
+	// Build the homepage
+	t, err := template.New(path.Base(templatePath)).ParseFiles(templatePath)
+	if err != nil {
+		log.Println("Template build for", templatePath, " failed", err)
+		return
+	}
+	// generate the page once and for all since we do
+	// not support hot reloading of the configuration
+	if err = t.Execute(writer, data); err != nil {
+		log.Println("Template build for ", templatePath, " failed", err)
+		return
+	}
 	return
 }
 
