@@ -17,11 +17,10 @@ import (
 
 	"golang.org/x/crypto/blake2b"
 
-	// load postgresql driver
-
 	"github.com/aeternity/aepp-contracts-library/utils"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
+	// load postgresql driver
 	_ "github.com/lib/pq"
 )
 
@@ -123,12 +122,12 @@ func renderTemplate(templatePath string, data interface{}, writer io.Writer) (er
 
 // Contract the struct for peers
 type Contract struct {
-	Source       string            `json:"code"`
-	Options      map[string]string `json:"options"`
-	B2bH         string            `json:"b2bh"`
-	ResponseCode int               `json:"response_code"`
-	ResponseMsg  string            `json:"response_msg"`
-	Name         string            `json:"name"`
+	Source       string                 `json:"code"`
+	Options      map[string]interface{} `json:"options"`
+	B2bH         string                 `json:"b2bh"`
+	ResponseCode int                    `json:"response_code"`
+	ResponseMsg  string                 `json:"response_msg"`
+	Name         string                 `json:"name"`
 }
 
 func storeContract(contract *Contract) (err error) {
